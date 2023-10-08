@@ -18,7 +18,7 @@ btnCreate.addEventListener("click", () => {
   price.value = "";
   stock.value = "";
   modalArticle.show();
-  option = "create";
+  option = "toCreate";
 });
 
 //Function show results
@@ -27,7 +27,7 @@ const display = (articles) => {
     results += `<tr>
                   <td>${article.id}</td>
                   <td>${article.nameProduct}</td>
-                  <td>$${article.price}</td>
+                  <td>${article.price}</td>
                   <td>${article.stock}</td>
                   <td class="text-center d-flex justify-content-evenly"><a class="btnEdit btn btn-primary">Edit</a> <a class="btnDelete btn btn-danger">Delet</a></td>
 
@@ -57,7 +57,8 @@ on(document, "click", ".btnDelete", (e) => {
   const id = row.firstElementChild.innerHTML;
 
   alertify.confirm(
-    "This is a confirm dialog.",
+    "¡Eliminar producto!",
+    "¿Está seguro de eliminar este producto?",
     function () {
       
       fetch(url + id, {
@@ -73,3 +74,66 @@ on(document, "click", ".btnDelete", (e) => {
       alertify.error("Cancel");
     })
 });
+
+// Update procedure
+let idForm = 0
+
+on(document, "click", ".btnEdit", (e) => {
+  const row = e.target.parentNode.parentNode;
+  idForm = row.children[0].innerHTML
+  const nameForm = row.children[1].innerHTML
+  const priceForm = row.children[2].innerHTML
+  const stockForm = row.children[3].innerHTML
+
+  nameArticle.value = nameForm
+  price.value = priceForm
+  stock.value = stockForm
+
+  option = 'toEdit'
+  modalArticle.show()
+});
+
+
+// Create procedure
+form.addEventListener('submit', (e)=> {
+  e.preventDefault()
+  if(option === 'toCreate') {
+    fetch(url, {
+      method:'POST',
+      headers: {
+        'content-Type': 'application/json'
+      }, 
+      body: JSON.stringify({
+        nameProduct:nameArticle.value,
+        price:price.value,
+        stock:stock.value
+      })
+    }) 
+
+    .then(response => response.json())
+    .then(data => {
+      const newArticle = [] 
+      newArticle.push(data)
+      display(newArticle)
+    })
+  }
+
+  if (option === 'toEdit') {
+    fetch(url+idForm, {
+      method: 'PUT', 
+      headers: {
+        'content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        nameProduct:nameArticle.value,
+        price:price.value,
+        stock:stock.value
+      })
+    })
+
+    .then(response => response.json())
+    .then(response => location.reload())
+  }
+
+  modalArticle.hide()
+})
